@@ -1,0 +1,67 @@
+[tool.poetry]
+name = "vehicle-value-estimator"
+version = "0.1.0"
+description = "AI-based solution for predicting car prices, leveraging machine learning to analyze vehicle features for accurate valuations."
+authors = ["Ademola Olokun <salamiolokun@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pydantic = "^2.5.1"
+pandas = "^2.1.3"
+numpy = "^1.26.2"
+seaborn = "^0.13.0"
+matplotlib = "^3.8.2"
+scikit-learn = "^1.3.2"
+category-encoders = "^2.6.3"
+streamlit = "^1.28.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4"
+black = "^23.11.0"
+isort = "^5.12.0"
+mypy = "^1.7.0"
+toml = "^0.10.2"
+flake8 = "^6.1.0"
+
+[tool.isort]
+ensure_newline_before_comments = true
+include_trailing_comma = true
+lines_after_imports = 2
+multi_line_output = 3
+profile = "black"
+use_parentheses = true
+line_length = 118
+
+[tool.mypy]
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.black]
+target-version = ['py311']
+line-length = 118
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | service_contract
+    | docs
+    | pgdata
+  )/
+)
+'''
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
