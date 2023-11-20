@@ -1,3 +1,5 @@
+SHELL:=/bin/zsh
+
 .PHONY: lint
 lint:
 	poetry run flake8 **/*.py
