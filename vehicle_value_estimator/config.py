@@ -1,4 +1,3 @@
-"""Module providing logging function."""
 import logging
 
 

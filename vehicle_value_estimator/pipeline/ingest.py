@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from vehicle_value_estimator.utils.logger import logging
+from vehicle_value_estimator.config import logging
 
 
 class DataIngestion:
