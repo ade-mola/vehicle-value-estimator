@@ -1,4 +1,4 @@
-"""Module for data ingestion."""
+"""Script for data ingestion."""
 import argparse
 from argparse import Namespace
 from pathlib import Path

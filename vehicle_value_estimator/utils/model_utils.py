@@ -1,10 +1,15 @@
 import time
 from typing import List, Tuple, Union
 
+import category_encoders as ce
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
+from sklearn.compose import ColumnTransformer
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import PolynomialFeatures
 
 
 def evaluate_model(
@@ -74,3 +79,48 @@ def evaluate_model(
         return df, predictions, fitted_models
     else:
         return df
+
+
+def preprocess_for_modelling(
+    X: pd.DataFrame, y: pd.Series, cat_cols: list[str], test_size: float = 0.2
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, Pipeline, pd.DataFrame, pd.DataFrame,]:
+    # Converting categorical columns to 'category' data type
+    X[cat_cols] = X[cat_cols].apply(lambda x: x.astype("category"))
+
+    # Splitting into train and validation sets
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=test_size, random_state=1996)
+
+    # Creating the pipeline for preprocessing
+    ml_preprocessing_pipeline = Pipeline(
+        [
+            ("encoder", ce.LeaveOneOutEncoder(cols=cat_cols)),
+            (
+                "polynomial",
+                ColumnTransformer(
+                    transformers=[
+                        ("poly", PolynomialFeatures(interaction_only=True, include_bias=False), X_train.columns)
+                    ],
+                    remainder="passthrough",
+                    verbose_feature_names_out=False,
+                ),
+            ),
+            # Add more preprocessing steps if needed
+        ]
+    ).set_output(transform="pandas")
+
+    # Fit the preprocessing pipeline on the training data
+    ml_preprocessing_pipeline.fit(X_train, y_train)
+
+    # Apply the preprocessing pipeline to transform the data
+    enc_train = ml_preprocessing_pipeline.transform(X_train)
+    enc_val = ml_preprocessing_pipeline.transform(X_val)
+
+    return (
+        enc_train,
+        enc_val,
+        y_train,
+        y_val,
+        ml_preprocessing_pipeline,
+        X_train,
+        X_val,
+    )

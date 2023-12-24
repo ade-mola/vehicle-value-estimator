@@ -7,7 +7,7 @@ from vehicle_value_estimator.utils.preprocess_transformer import (
 )
 
 
-def cleaning_pipeline() -> Pipeline:
+def cleaning_pipeline(mode: str = "dev", filter_iqr: bool = False) -> Pipeline:
     """
     Create a data cleaning pipeline for preprocessing dataset.
 
@@ -32,7 +32,10 @@ def cleaning_pipeline() -> Pipeline:
 
     steps = [
         ("fill_columns", FillMissingValuesTransformer(columns_to_fill=columns_to_fill)),
-        ("transform_and_engineer", FeatureEngineeringTransformer(norm_cols=normalise_cols)),
+        (
+            "transform_and_engineer",
+            FeatureEngineeringTransformer(norm_cols=normalise_cols, filter_iqr=filter_iqr, mode=mode),
+        ),
         (
             "dropper",
             ColumnDropper(
