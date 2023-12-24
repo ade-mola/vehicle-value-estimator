@@ -44,31 +44,32 @@ log_missing_data(X, "Post-cleaning data")
 
 
 def main() -> None:
-    with mlflow.start_run() as run:
+    model = LGBMRegressor(
+        learning_rate=0.1,
+        max_depth=20,
+        min_split_gain=4,
+        num_leaves=1024,
+        random_state=1996,
+        n_jobs=-1,
+        verbose=-1,
+    )
+
+    mlflow.lightgbm.autolog(silent=True)
+
+    for param, value in model.get_params().items():
+        mlflow.log_param(param, value)
+
+    enc_train, enc_val, y_train, y_val, ml_preprocessor, *_ = preprocess_for_modelling(X=X, y=y, cat_cols=CAT_COLS)
+
+    # RFECV Selector
+    rfecv_selector = RFECV(estimator=LGBMRegressor(verbose=-1), step=1, cv=5, n_jobs=-1)
+    rfecv_selector.fit(enc_train, y_train)
+    enc_train_rfecv = rfecv_selector.transform(enc_train)
+    enc_val_rfecv = rfecv_selector.transform(enc_val)
+
+    with mlflow.start_run(nested=True):
         logging.info("Starting ML training pipeline...")
         try:
-            enc_train, enc_val, y_train, y_val, ml_preprocessor, *_ = preprocess_for_modelling(
-                X=X, y=y, cat_cols=CAT_COLS
-            )
-
-            mlflow.lightgbm.autolog(silent=True)
-
-            model = LGBMRegressor(
-                learning_rate=0.1,
-                max_depth=20,
-                min_split_gain=4,
-                num_leaves=1024,
-                random_state=1996,
-                n_jobs=-1,
-                verbose=-1,
-            )
-
-            # RFECV Selector
-            rfecv_selector = RFECV(estimator=LGBMRegressor(verbose=-1), step=1, cv=5, n_jobs=-1)
-            rfecv_selector.fit(enc_train, y_train)
-            enc_train_rfecv = rfecv_selector.transform(enc_train)
-            enc_val_rfecv = rfecv_selector.transform(enc_val)
-
             model.fit(enc_train_rfecv, y_train, eval_set=[(enc_val_rfecv, y_val)])
             pred = model.predict(enc_val_rfecv)
 
@@ -77,12 +78,14 @@ def main() -> None:
             mlflow.log_metric("rmse", rmse)
             mlflow.log_metric("mae", mae)
             mlflow.log_metric("r2", r2)
+
         except Exception as e:
             logging.error(f"An error occurred during model training: {e}")
             mlflow.end_run(status="FAILED")
             return
 
-    run_id = mlflow.get_run(run.info.run_id).info.run_id
+    # run_id = mlflow.get_run(run.info.run_id).info.run_id
+    run_id = mlflow.last_active_run().info.run_id
     logging.info(f"Model training completed. Logged data and model in: {run_id}")
 
     # for key, data in fetch_logged_data(run_id).items():
