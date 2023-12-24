@@ -3,14 +3,11 @@ channels:
   - conda-forge
 dependencies:
   - python=3.10
-  - pydantic
+  - make
   - pip
   - pip:
+      - poetry==1.7.*
       - pandas
-      - numpy
       - scikit-learn
       - mlflow
-      - category-encoders
-      - streamlit
       - lightgbm<=4.1.0
-      - beautifulsoup4
