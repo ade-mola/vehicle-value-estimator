@@ -17,3 +17,6 @@ poetry install
 make fix
 make lint
 ```
+
+## Web App
+[Vehicle Value Estimator App](https://vehicle-value-estimator-h7nybpi4dbuwerbph7zfdr.streamlit.app/)
