@@ -14,7 +14,7 @@ ML_PREPROCESSOR_PATH = "vehicle_value_estimator/artifacts/ml_preprocessor.pkl"
 RFECV_SELECTOR_PATH = "vehicle_value_estimator/artifacts/rfecv_selector.pkl"
 
 
-car_features = pd.read_csv("vehicle_value_estimator/data/car_features.csv").dropna()
+car_features = pd.read_csv("vehicle_value_estimator/artifacts/car_features.csv").dropna()
 
 
 def get_related_features(df: pd.DataFrame, group_column: str, target_column: str) -> dict:
