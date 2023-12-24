@@ -86,6 +86,15 @@ def main() -> None:
 
     # run_id = mlflow.get_run(run.info.run_id).info.run_id
     run_id = mlflow.last_active_run().info.run_id
+    mv = mlflow.register_model(f"runs:/{run_id}/model", "lightgbm-model")
+    with open("vehicle_value_estimator/config.py", "r") as file:
+        lines = file.readlines()
+    with open("vehicle_value_estimator/config.py", "w") as file:
+        for line in lines:
+            if line.strip().startswith("MLFLOW_MODEL_VERSION"):
+                file.write(f"MLFLOW_MODEL_VERSION = '{mv.version}'\n")
+            else:
+                file.write(line)
     logging.info(f"Model training completed. Logged data and model in: {run_id}")
 
     # for key, data in fetch_logged_data(run_id).items():

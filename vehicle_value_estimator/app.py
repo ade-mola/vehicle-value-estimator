@@ -1,8 +1,9 @@
 import pickle
 import subprocess
 import sys
+import time
 import warnings
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple, Union
 
 import pandas as pd
 import streamlit as st
@@ -61,7 +62,6 @@ class VehicleValueEstimatorModel:
         )
 
         df = data_engineering(df, mode="prod")
-        print(df)
         df = self.pipeline.transform(df)
         df = self.selector.transform(df)
 
@@ -72,63 +72,89 @@ class VehicleValueEstimatorApp:
     def __init__(self, model_file_path: str, pipeline_file_path: str, selector_path: str) -> None:
         self.model = VehicleValueEstimatorModel(model_file_path, pipeline_file_path, selector_path)
 
-    def show_header(self) -> None:
-        st.title("Vehicle Value Estimator")
-        st.markdown(
-            """
-        This web application is an implementation of a predictive model
-        for predicting the estimated price valuation of a vehicle.
+    def setup_page(self) -> None:
+        st.set_page_config(layout="wide", page_title="Vehicle Value Estimator App", page_icon=":car:")
 
-        <div style="background-color:#f15145;
-                    border-radius: 25px;
-                    padding:5px">
-            <h2 style="color:#2c3c51;
-                       text-align:center;">
-                Vehicle Value Estimator App
-            </h2>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
+    def get_input_data(self) -> Union[Tuple[float, str, str, str, float, str, str], Optional[None]]:
+        with st.form("value_estimator"):
+            mileage = float(st.number_input(label="Vehicle Mileage: ", min_value=0, max_value=90000))
+            standard_make = str(st.selectbox(label="Choose Vehicle Brand: ", options=tuple(STANDARD_MAKE)))
 
-    def get_input_data(self) -> Tuple[float, str, str, str, float, str, str]:
-        standard_model = ""
-        body_type = ""
-        fuel_type = ""
+            standard_model = ""
+            body_type = ""
+            fuel_type = ""
 
-        mileage = float(st.number_input(label="Vehicle Mileage: ", min_value=0, max_value=90000))
+            if standard_make:
+                model = STANDARD_MODEL.get(standard_make, [])
+                standard_model = str(st.selectbox(label="Choose Vehicle Model: ", options=tuple(model)))
 
-        standard_make = str(st.selectbox(label="Choose Vehicle Brand: ", options=tuple(STANDARD_MAKE)))
+                if standard_model:
+                    body_type = str(
+                        st.selectbox(
+                            label="Choose Vehicle Body Type: ", options=tuple(BODY_TYPE.get(standard_model, []))
+                        )
+                    )
+                    fuel_type = str(
+                        st.selectbox(
+                            label="Choose Vehicle Fuel Type: ", options=tuple(FUEL_TYPE.get(standard_model, []))
+                        )
+                    )
 
-        if standard_make:
-            model = STANDARD_MODEL.get(standard_make, [])
-            standard_model = str(st.selectbox(label="Choose Vehicle Model: ", options=tuple(model)))
+            vehicle_condition = str(st.radio(label="Choose Vehicle Condition: ", options=("USED", "NEW")))
 
-            if standard_model:
-                body = BODY_TYPE.get(standard_model, [])
-                body_type = str(st.selectbox(label="Choose Vehicle Body Type: ", options=tuple(body)))
+            year_of_registration = float(
+                st.slider(label="Choose Vehicle Registration Year: ", min_value=1933, max_value=2021, value=2017)
+            )
 
-                fuel = FUEL_TYPE.get(standard_model, [])
-                fuel_type = str(st.selectbox(label="Choose Vehicle Fuel Type: ", options=tuple(fuel)))
-
-        vehicle_condition = str(st.radio(label="Choose Vehicle Condition: ", options=("USED", "NEW")))
-
-        year_of_registration = float(
-            st.slider(label="Choose Vehicle Registration Year: ", min_value=1933, max_value=2021, value=2017)
-        )
-
-        return mileage, standard_make, standard_model, vehicle_condition, year_of_registration, body_type, fuel_type
-
-    def show_prediction_result(self, price: float) -> None:
-        st.success(f"Estimated Price of Vehicle is: £{price:,.2f}")
+            submitted = st.form_submit_button(label="Predict")
+            if submitted:
+                return (
+                    mileage,
+                    standard_make,
+                    standard_model,
+                    vehicle_condition,
+                    year_of_registration,
+                    body_type,
+                    fuel_type,
+                )
+            else:
+                return None
 
     def run(self) -> None:
-        self.show_header()
-        data = self.get_input_data()
+        self.setup_page()
+        st.header("Vehicle Value Estimator")
+        st.subheader("Estimate the market value of your vehicle")
 
-        if st.button("Predict"):
-            price = self.model.predict_price(data)
-            self.show_prediction_result(price)
+        with st.container():
+            col1, col2 = st.columns(2)
+            with col1:
+                data = self.get_input_data()
+            with col2:
+                st.image(
+                    "https://www.hdcarwallpapers.com/walls/2015_mercedes_amg_gt_s_uk_spec-HD.jpg",
+                    use_column_width=True,
+                )
+
+                result_placeholder = st.empty()
+                if data:
+                    progress_text = "Operation in progress. Please wait..."
+                    my_bar = st.progress(0, text=progress_text)
+
+                    for percent_complete in range(100):
+                        time.sleep(0.01)
+                        my_bar.progress(percent_complete + 1, text=progress_text)
+                    time.sleep(1)
+                    my_bar.empty()
+                    result_placeholder.empty()
+
+                    price = self.model.predict_price(data)
+                    result_placeholder.success(f"Estimated Price of Vehicle: £{price:,.2f}")
+
+        with st.expander("More Options"):
+            # Additional options can be placed here
+            pass
+
+        st.markdown("### App developed by Ademola Olokun")
 
 
 if __name__ == "__main__":

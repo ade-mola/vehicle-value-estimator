@@ -32,3 +32,6 @@ FUEL_TYPE = get_related_features(car_features, "standard_model", "fuel_type")
 
 VEHICLE_REGISTRATION_URL = "https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_the_United_Kingdom"
 CAT_COLS = ["standard_make", "standard_model", "body_type", "fuel_type", "mile_yr_bin"]
+
+MLFLOW_MODEL_NAME = "lightgbm-model"
+MLFLOW_MODEL_VERSION = "6"
