@@ -13,7 +13,7 @@ from vehicle_value_estimator.config import (
     TRAINING_SET,
     logging,
 )
-from vehicle_value_estimator.pipeline.cleaning import cleaning_pipeline
+from vehicle_value_estimator.data_pipeline.cleaning import cleaning_pipeline
 from vehicle_value_estimator.utils.model_utils import evaluate_model, preprocess_for_modelling
 
 
