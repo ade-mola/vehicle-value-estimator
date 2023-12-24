@@ -98,59 +98,26 @@ class VehicleValueEstimatorApp:
 
         mileage = float(st.number_input(label="Vehicle Mileage: ", min_value=0, max_value=90000))
 
-        standard_make = str(
-            st.selectbox(
-                label="Choose Vehicle Brand: ",
-                options=tuple(STANDARD_MAKE),
-            )
-        )
+        standard_make = str(st.selectbox(label="Choose Vehicle Brand: ", options=tuple(STANDARD_MAKE)))
 
         if standard_make:
             model = STANDARD_MODEL.get(standard_make, [])
-            standard_model = str(
-                st.selectbox(
-                    label="Choose Vehicle Model: ",
-                    options=tuple(model),
-                )
-            )
+            standard_model = str(st.selectbox(label="Choose Vehicle Model: ", options=tuple(model)))
 
             if standard_model:
                 body = BODY_TYPE.get(standard_model, [])
-                body_type = str(
-                    st.selectbox(
-                        label="Choose Vehicle Body Type: ",
-                        options=tuple(body),
-                    )
-                )
+                body_type = str(st.selectbox(label="Choose Vehicle Body Type: ", options=tuple(body)))
 
                 fuel = FUEL_TYPE.get(standard_model, [])
-                fuel_type = str(
-                    st.selectbox(
-                        label="Choose Vehicle Fuel Type: ",
-                        options=tuple(fuel),
-                    )
-                )
+                fuel_type = str(st.selectbox(label="Choose Vehicle Fuel Type: ", options=tuple(fuel)))
 
-        vehicle_condition = str(
-            st.radio(
-                label="Choose Vehicle Condition: ",
-                options=("USED", "NEW"),
-            )
-        )
+        vehicle_condition = str(st.radio(label="Choose Vehicle Condition: ", options=("USED", "NEW")))
 
         year_of_registration = float(
             st.slider(label="Choose Vehicle Registration Year: ", min_value=1933, max_value=2021, value=2017)
         )
 
-        return (
-            mileage,
-            standard_make,
-            standard_model,
-            vehicle_condition,
-            year_of_registration,
-            body_type,
-            fuel_type,
-        )
+        return mileage, standard_make, standard_model, vehicle_condition, year_of_registration, body_type, fuel_type
 
     def show_prediction_result(self, price: float) -> None:
         st.success(f"Estimated Price of Vehicle is: £{price:,.2f}")

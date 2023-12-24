@@ -1,0 +1,5 @@
+name: vve-model
+conda_env: conda.yaml
+entry_points:
+    main:
+        command: "python vehicle_value_estimator/model/training.py"

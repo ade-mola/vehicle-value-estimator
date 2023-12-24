@@ -1,15 +1,25 @@
 import time
-from typing import List, Tuple, Union
+from typing import Iterator, List, Optional, Tuple, Union
 
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+from mlflow.tracking import MlflowClient
 from sklearn.base import BaseEstimator
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
+
+
+def eval_metrics(
+    actual: Union[pd.Series, np.ndarray], pred: Union[pd.Series, np.ndarray]
+) -> Tuple[float, float, float]:
+    rmse = round(np.sqrt(mean_squared_error(actual, pred)), 2)
+    mae = round(mean_absolute_error(actual, pred), 2)
+    r2 = round(r2_score(actual, pred), 2)
+    return rmse, mae, r2
 
 
 def evaluate_model(
@@ -51,9 +61,8 @@ def evaluate_model(
 
         train_score = fitted_model.score(X_train, y_train)
         val_score = fitted_model.score(X_val, y_val)
-        r2 = round(r2_score(y_val, pred), 2)
-        rmse = round(np.sqrt(mean_squared_error(y_val, pred)), 2)
-        mae = round(mean_absolute_error(y_val, pred), 2)
+
+        rmse, mae, r2 = eval_metrics(y_val, pred)
 
         end = time.time()
         elapsed_time = end - start
@@ -124,3 +133,28 @@ def preprocess_for_modelling(
         X_train,
         X_val,
     )
+
+
+def yield_artifacts(run_id: str, path: Optional[str] = None) -> Iterator[str]:
+    """Yield all artifacts in the specified run"""
+    client = MlflowClient()
+    for item in client.list_artifacts(run_id, path):
+        if item.is_dir:
+            yield from yield_artifacts(run_id, item.path)
+        else:
+            yield item.path
+
+
+def fetch_logged_data(run_id: str) -> dict:
+    """Fetch params, metrics, tags, and artifacts in the specified run"""
+    client = MlflowClient()
+    data = client.get_run(run_id).data
+    # Exclude system tags: https://www.mlflow.org/docs/latest/tracking.html#system-tags
+    tags = {k: v for k, v in data.tags.items() if not k.startswith("mlflow.")}
+    artifacts = list(yield_artifacts(run_id))
+    return {
+        "params": data.params,
+        "metrics": data.metrics,
+        "tags": tags,
+        "artifacts": artifacts,
+    }

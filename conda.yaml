@@ -1,0 +1,16 @@
+name: vve
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pydantic
+  - pip
+  - pip:
+      - pandas
+      - numpy
+      - scikit-learn
+      - mlflow
+      - category-encoders
+      - streamlit
+      - lightgbm<=4.1.0
+      - beautifulsoup4
