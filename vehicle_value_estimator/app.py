@@ -76,49 +76,45 @@ class VehicleValueEstimatorApp:
         st.set_page_config(layout="wide", page_title="Vehicle Value Estimator App", page_icon=":car:")
 
     def get_input_data(self) -> Union[Tuple[float, str, str, str, float, str, str], Optional[None]]:
-        with st.form("value_estimator"):
-            mileage = float(st.number_input(label="Vehicle Mileage: ", min_value=0, max_value=90000))
-            standard_make = str(st.selectbox(label="Choose Vehicle Brand: ", options=tuple(STANDARD_MAKE)))
+        standard_model = ""
+        body_type = ""
+        fuel_type = ""
 
-            standard_model = ""
-            body_type = ""
-            fuel_type = ""
+        mileage = float(st.number_input(label="Vehicle Mileage: ", min_value=0, max_value=90000))
+        standard_make = str(st.selectbox(label="Choose Vehicle Brand: ", options=tuple(STANDARD_MAKE)))
 
-            if standard_make:
-                model = STANDARD_MODEL.get(standard_make, [])
-                standard_model = str(st.selectbox(label="Choose Vehicle Model: ", options=tuple(model)))
-
-                if standard_model:
-                    body_type = str(
-                        st.selectbox(
-                            label="Choose Vehicle Body Type: ", options=tuple(BODY_TYPE.get(standard_model, []))
-                        )
-                    )
-                    fuel_type = str(
-                        st.selectbox(
-                            label="Choose Vehicle Fuel Type: ", options=tuple(FUEL_TYPE.get(standard_model, []))
-                        )
-                    )
-
-            vehicle_condition = str(st.radio(label="Choose Vehicle Condition: ", options=("USED", "NEW")))
-
-            year_of_registration = float(
-                st.slider(label="Choose Vehicle Registration Year: ", min_value=1933, max_value=2021, value=2017)
+        if standard_make:
+            standard_model = str(
+                st.selectbox(label="Choose Vehicle Model: ", options=tuple(STANDARD_MODEL.get(standard_make, [])))
             )
 
-            submitted = st.form_submit_button(label="Predict")
-            if submitted:
-                return (
-                    mileage,
-                    standard_make,
-                    standard_model,
-                    vehicle_condition,
-                    year_of_registration,
-                    body_type,
-                    fuel_type,
+            if standard_model:
+                body_type = str(
+                    st.selectbox(label="Choose Vehicle Body Type: ", options=tuple(BODY_TYPE.get(standard_model, [])))
                 )
-            else:
-                return None
+                fuel_type = str(
+                    st.selectbox(label="Choose Vehicle Fuel Type: ", options=tuple(FUEL_TYPE.get(standard_model, [])))
+                )
+
+        vehicle_condition = str(st.radio(label="Choose Vehicle Condition: ", options=("USED", "NEW")))
+
+        year_of_registration = float(
+            st.slider(label="Choose Vehicle Registration Year: ", min_value=1933, max_value=2021, value=2017)
+        )
+
+        submitted = st.button(label="Predict")
+        if submitted:
+            return (
+                mileage,
+                standard_make,
+                standard_model,
+                vehicle_condition,
+                year_of_registration,
+                body_type,
+                fuel_type,
+            )
+        else:
+            return None
 
     def run(self) -> None:
         self.setup_page()
